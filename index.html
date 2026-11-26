@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#397a50">
+<meta name="description" content="2027年の野菜づくりを楽しく管理する菜園ノート">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<title>わたしの菜園｜2027</title>
+<style>
+:root{--green:#397a50;--pale:#edf6e9;--cream:#fffdf5;--ink:#314536;--line:#dce8d8}
+*{box-sizing:border-box}body{margin:0;background:#f5f8ef;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN",Meiryo,sans-serif}
+header{background:linear-gradient(135deg,#397a50,#78a96c);color:white;padding:24px 18px 18px}header h1{margin:0;font-size:23px}header p{margin:7px 0 0;font-size:13px;opacity:.95}
+nav{display:flex;gap:7px;overflow:auto;padding:10px;background:#e8f1e4;position:sticky;top:0;z-index:2}
+nav button{white-space:nowrap;border:0;border-radius:20px;padding:9px 13px;background:white;color:var(--green);font-weight:700}
+nav button.active{background:var(--green);color:white}
+main{max-width:900px;margin:auto;padding:14px}.panel{display:none}.panel.active{display:block}
+.card{background:white;border:1px solid var(--line);border-radius:16px;padding:15px;margin:0 0 13px;box-shadow:0 2px 8px #355b3910}
+h2{font-size:18px;margin:0 0 12px;color:var(--green)}h3{font-size:15px;margin:0 0 8px}
+button,.btn{cursor:pointer}input,select,textarea{font:inherit;border:1px solid #cbdcc7;border-radius:9px;padding:9px;background:white;color:var(--ink);max-width:100%}
+label{display:block;font-size:13px;margin:9px 0 4px}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.row>*{flex:1;min-width:120px}
+.primary{border:0;background:var(--green);color:white;padding:10px 15px;border-radius:10px;font-weight:700;margin-top:10px}
+.muted{font-size:12px;color:#718274}.task{padding:10px 0;border-bottom:1px solid #edf1eb;display:flex;gap:9px;align-items:flex-start}.task:last-child{border:0}.task input{margin-top:3px}
+.tag{font-size:11px;background:#edf6e9;border-radius:12px;padding:3px 8px;color:#397a50}
+.barline{display:grid;grid-template-columns:95px 1fr;gap:8px;align-items:center;margin:12px 0;font-size:12px}
+.track{height:17px;background:#edf2ea;border-radius:12px;position:relative;overflow:hidden}
+.bar{position:absolute;height:100%;border-radius:12px;background:#83b77a}
+.months{display:grid;grid-template-columns:repeat(12,1fr);font-size:9px;color:#788879;margin-left:103px;text-align:center}
+.monthgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}.day{min-height:55px;border:1px solid #e2ebde;border-radius:8px;padding:4px;font-size:11px;background:#fff}.day.today{background:#edf6e9;border-color:#83b77a}.day small{display:block;color:#54845a}
+.entry{border-bottom:1px solid #edf1eb;padding:10px 0}.entry img{max-width:100%;max-height:180px;object-fit:cover;border-radius:10px;margin-top:7px}
+.stat{font-size:24px;font-weight:800;color:var(--green)}
+@media(min-width:650px){main{padding:22px}.barline{grid-template-columns:130px 1fr}.months{margin-left:138px}}
+</style>
+</head>
+<body>
+<header><h1>🌱 わたしの菜園</h1><p>2027年の栽培管理ノート｜育てて、記録して、たくさん収穫！</p></header>
+<nav id="tabs">
+<button class="active" data-tab="year">年間計画</button><button data-tab="tasks">作業チェック</button><button data-tab="calendar">月間カレンダー</button><button data-tab="diary">栽培日記</button><button data-tab="harvest">収穫記録</button><button data-tab="remind">リマインダー</button>
+</nav>
+<main>
+<section id="year" class="panel active"><div class="card"><h2>🥕 2027年 年間栽培計画</h2><p class="muted">岡崎周辺の露地栽培を想定した目安です。天候や畑の状態に合わせて調整してください。</p><div class="months" id="monthlabels"></div><div id="gantt"></div></div></section>
+<section id="tasks" class="panel"><div class="card"><h2>✅ 作業チェックリスト</h2><div class="row"><select id="cropfilter"><option value="">すべての野菜</option></select><select id="monthfilter"><option value="">すべての月</option></select></div><div id="tasklist"></div></div></section>
+<section id="calendar" class="panel"><div class="card"><div class="row"><button class="primary" id="prev">← 前月</button><h2 id="calTitle" style="text-align:center;margin:auto"></h2><button class="primary" id="next">次月 →</button></div><div class="monthgrid" id="calendargrid"></div><p class="muted">日付の下に予定作業が表示されます。</p></div></section>
+<section id="diary" class="panel"><div class="card"><h2>📔 栽培日記</h2><label>日付</label><input type="date" id="diarydate" value="2027-03-01"><label>野菜</label><select id="diarycrop"></select><label>今日の様子・作業</label><textarea id="diarytext" rows="3" style="width:100%" placeholder="発芽した！葉が大きくなった！など"></textarea><label>写真</label><input type="file" id="diaryphoto" accept="image/*"><button class="primary" id="addDiary">日記を保存</button><div id="diarylist"></div></div></section>
+<section id="harvest" class="panel"><div class="card"><h2>🧺 収穫記録</h2><div class="row"><div><label>日付</label><input type="date" id="harvestdate" value="2027-06-01"></div><div><label>野菜</label><select id="harvestcrop"></select></div></div><div class="row"><div><label>収穫量</label><input type="number" id="harvestqty" min="0" step="0.1" placeholder="例：3"></div><div><label>単位</label><select id="harvestunit"><option>kg</option><option>個</option><option>本</option><option>株</option></select></div></div><label>メモ</label><input id="harvestmemo" style="width:100%" placeholder="大きさ・出来ばえなど"><button class="primary" id="addHarvest">収穫を記録</button><div id="harvesttotals"></div><div id="harvestlist"></div></div></section>
+<section id="remind" class="panel"><div class="card"><h2>🔔 作業リマインダー</h2><p>登録した作業予定を表示します。通知を許可すると、このページを開いている間に予定日のお知らせを表示できます。</p><button class="primary" id="allowNotify">通知を許可する</button><div id="reminderlist"></div><p class="muted">※ iPhoneではブラウザを閉じている間の通知は保証されません。定期的にホーム画面のアプリを開いて確認してください。</p></div></section>
+<footer class="muted" style="text-align:center;padding:12px">保存先：この端末のブラウザ内（localStorage）</footer>
+</main>
+<script>
+const crops=["春じゃがいも","秋じゃがいも","ズッキーニ","大根","ビーツ","かぶ"];
+const colors=["#8fbd7d","#b0a2d6","#e7b65e","#8ab6ce","#bd8d9c","#d5a96d"];
+const tasks=[
+["春じゃがいも","種いも準備・芽出し","2027-02-01","2027-02-20"],["春じゃがいも","植え付け","2027-02-20","2027-03-15"],["春じゃがいも","芽かき・土寄せ・追肥","2027-03-15","2027-04-20"],["春じゃがいも","収穫","2027-05-20","2027-06-20"],
+["ズッキーニ","種まき・育苗","2027-03-20","2027-04-20"],["ズッキーニ","定植","2027-04-20","2027-05-10"],["ズッキーニ","追肥・人工授粉・収穫","2027-05-20","2027-08-10"],
+["秋じゃがいも","種いも準備","2027-08-01","2027-08-20"],["秋じゃがいも","植え付け","2027-08-20","2027-09-10"],["秋じゃがいも","土寄せ・追肥","2027-09-10","2027-10-20"],["秋じゃがいも","収穫","2027-11-20","2027-12-15"],
+["大根","種まき・間引き","2027-08-20","2027-09-20"],["大根","追肥・土寄せ","2027-09-20","2027-10-30"],["大根","収穫","2027-10-20","2027-12-20"],
+["ビーツ","種まき・間引き","2027-03-15","2027-04-20"],["ビーツ","追肥・水やり","2027-04-01","2027-05-20"],["ビーツ","収穫","2027-05-20","2027-06-20"],
+["かぶ","種まき・間引き","2027-09-01","2027-10-01"],["かぶ","追肥・水やり","2027-09-20","2027-10-20"],["かぶ","収穫","2027-10-20","2027-11-30"]];
+const key="myLittleFarm2027_standalone";
+let data=JSON.parse(localStorage.getItem(key)||'{"done":[],"diary":[],"harvest":[]}');
+function save(){localStorage.setItem(key,JSON.stringify(data))}
+function date(s){return new Date(s+"T12:00:00")}
+function initSelect(id){document.getElementById(id).innerHTML=crops.map(c=>`<option>${c}</option>`).join("")}
+["diarycrop","harvestcrop","cropfilter"].forEach(initSelect);
+document.getElementById("monthfilter").innerHTML='<option value="">すべての月</option>'+Array.from({length:12},(_,i)=>`<option value="${i+1}">${i+1}月</option>`).join("");
+document.getElementById("monthlabels").innerHTML=Array.from({length:12},(_,i)=>`<span>${i+1}月</span>`).join("");
+document.getElementById("gantt").innerHTML=tasks.filter((t,i,a)=>a.findIndex(x=>x[0]===t[0])===i).map((t)=>{let c=t[0],idx=crops.indexOf(c);return `<div class="barline"><b>${c}</b><div class="track">${tasks.filter(x=>x[0]===c).map(x=>{let s=date(x[2]),e=date(x[3]),left=((s.getMonth()+(s.getDate()-1)/31)/12)*100,w=(((e-s)/86400000+1)/365)*100;return `<span title="${x[1]}" style="position:absolute;left:${left}%;width:${Math.max(w,2)}%;top:${tasks.filter(y=>y[0]===c).indexOf(x)*2}px;height:5px;border-radius:8px;background:${colors[idx]}"></span>`}).join("")}</div></div>`}).join("");
+function renderTasks(){let cf=document.getElementById("cropfilter").value,mf=document.getElementById("monthfilter").value;document.getElementById("tasklist").innerHTML=tasks.map((t,i)=>({...t,i})).filter(t=>(!cf||t[0]===cf)&&(!mf||(date(t[2]).getMonth()+1<=+mf&&date(t[3]).getMonth()+1>=+mf))).map(t=>`<div class="task"><input type="checkbox" ${data.done.includes(t.i)?"checked":""} onchange="toggleTask(${t.i},this.checked)"><div><b>${t[1]}</b> <span class="tag">${t[0]}</span><div class="muted">${t[2]} 〜 ${t[3]}</div></div></div>`).join("")}
+window.toggleTask=(i,v)=>{data.done=data.done.filter(x=>x!==i);if(v)data.done.push(i);save();renderTasks()};
+document.getElementById("cropfilter").onchange=renderTasks;document.getElementById("monthfilter").onchange=renderTasks;renderTasks();
+let calMonth=0;function renderCal(){let year=2027,m=calMonth;document.getElementById("calTitle").textContent=`${year}年 ${m+1}月`;let first=new Date(year,m,1).getDay(),days=new Date(year,m+1,0).getDate(),names=["日","月","火","水","木","金","土"];let out=names.map(n=>`<div class="day"><b>${n}</b></div>`).join("");for(let i=0;i<first;i++)out+='<div class="day"></div>';for(let d=1;d<=days;d++){let ds=`${year}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;let ev=tasks.filter(t=>ds>=t[2]&&ds<=t[3]);out+=`<div class="day"><b>${d}</b>${ev.slice(0,2).map(x=>`<small>${x[0]}</small>`).join("")}</div>`}document.getElementById("calendargrid").innerHTML=out}
+document.getElementById("prev").onclick=()=>{calMonth=(calMonth+11)%12;renderCal()};document.getElementById("next").onclick=()=>{calMonth=(calMonth+1)%12;renderCal()};renderCal();
+function renderDiary(){document.getElementById("diarylist").innerHTML=data.diary.slice().reverse().map(x=>`<div class="entry"><b>${x.date}｜${x.crop}</b><p>${esc(x.text)}</p>${x.photo?`<img src="${x.photo}">`:""}</div>`).join("")}
+function esc(s){return String(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+document.getElementById("addDiary").onclick=()=>{let f=document.getElementById("diaryphoto").files[0];let base={date:diarydate.value,crop:diarycrop.value,text:diarytext.value};if(f){let r=new FileReader();r.onload=()=>{base.photo=r.result;data.diary.push(base);save();renderDiary();diarytext.value="";diaryphoto.value=""};r.readAsDataURL(f)}else{data.diary.push(base);save();renderDiary();diarytext.value=""}};renderDiary();
+function renderHarvest(){let totals={};data.harvest.forEach(x=>{let k=x.crop+" ("+x.unit+")";totals[k]=(totals[k]||0)+x.qty});document.getElementById("harvesttotals").innerHTML='<h3>野菜別の合計</h3>'+Object.entries(totals).map(([k,v])=>`<span class="tag">${k}：${v}</span> `).join("");document.getElementById("harvestlist").innerHTML=data.harvest.slice().reverse().map(x=>`<div class="entry"><b>${x.date}｜${x.crop}</b><div class="stat">${x.qty} ${x.unit}</div><span class="muted">${esc(x.memo)}</span></div>`).join("")}
+document.getElementById("addHarvest").onclick=()=>{let q=+harvestqty.value;if(!q)return alert("収穫量を入力してください");data.harvest.push({date:harvestdate.value,crop:harvestcrop.value,qty:q,unit:harvestunit.value,memo:harvestmemo.value});save();renderHarvest();harvestqty.value="";harvestmemo.value=""};renderHarvest();
+document.getElementById("reminderlist").innerHTML=tasks.map(t=>`<div class="task"><div><b>${t[2]}</b>〜${t[3]}　${t[0]}：${t[1]}</div></div>`).join("");
+document.getElementById("allowNotify").onclick=async()=>{if(!("Notification"in window))return alert("この環境では通知に対応していません");let p=await Notification.requestPermission();alert(p==="granted"?"通知を許可しました。予定日にアプリを開くと確認できます。":"通知は許可されませんでした。")};
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.getElementById(b.dataset.tab).classList.add("active")});
+</script>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch(err => console.log("SW registration:", err));
+  });
+}
+</script>
+</body></html>
